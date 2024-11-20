@@ -1,3 +1,5 @@
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -6,18 +8,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "./ui/alert-dialog";
 
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import Image from "next/image";
+} from "./ui/input-otp";
 import React, { useState } from "react";
+import Image from "next/image";
 import { Button } from "./ui/button";
+import { verifySecret, sendEmailOTP } from "@/lib/actions/user.actions";
+import { useRouter } from "next/navigation";
 
-const OTPModal = ({ accountId, email }) => {
+const OTPModal = ({
+  accountId,
+  email,
+}: {
+  accountId: string;
+  email: string;
+}) => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -26,17 +37,23 @@ const OTPModal = ({ accountId, email }) => {
     e.preventDefault();
     setIsLoading(true);
 
+    console.log({ accountId, password });
+
     try {
-      // TODO Call API to verify OTP
+      const sessionId = await verifySecret({ accountId, password });
+
+      console.log({ sessionId });
+
+      if (sessionId) router.push("/");
     } catch (error) {
-      console.log("Failed To Verify OTP", error);
+      console.log("Failed to verify OTP", error);
     }
 
     setIsLoading(false);
   };
 
   const handleResendOtp = async () => {
-    // TODO Call API to resend OTP
+    await sendEmailOTP({ email });
   };
 
   return (
@@ -60,6 +77,7 @@ const OTPModal = ({ accountId, email }) => {
             <span className="pl-1 text-brand">{email}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
+
         <InputOTP maxLength={6} value={password} onChange={setPassword}>
           <InputOTPGroup className="shad-otp">
             <InputOTPSlot index={0} className="shad-otp-slot" />
@@ -90,10 +108,16 @@ const OTPModal = ({ accountId, email }) => {
                 />
               )}
             </AlertDialogAction>
+
             <div className="subtitle-2 mt-2 text-center text-light-100">
-              Didn&apos;t got a code?
-              <Button type="button" variant="link" className="pl-1 text-brand" onClick={handleResendOtp}>
-                Click to Resend
+              Didn&apos;t get a code?
+              <Button
+                type="button"
+                variant="link"
+                className="pl-1 text-brand"
+                onClick={handleResendOtp}
+              >
+                Click to resend
               </Button>
             </div>
           </div>

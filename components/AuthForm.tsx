@@ -54,12 +54,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
       const user = await createAccount({
         fullName: values.fullName || "",
         email: values.email,
-      });
-
+          })
       setAccountId(user.accountId);
-    } catch (error) {
+    } catch {
       setErrorMessage("Failed to create account. Please try again.");
-      console.log(error);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +145,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
-      {true && (
+      {accountId && (
         <OTPModal email={form.getValues("email")} accountId={accountId} />
       )}
     </>
